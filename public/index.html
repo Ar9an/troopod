@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mirra — LP Personalizer</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f0f2f7;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+      color: #1a1a2e;
+    }
+
+    .wrapper { max-width: 920px; margin: 0 auto; }
+
+    /* HEADER */
+    .header { margin-bottom: 2rem; }
+    .header h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #4f6ef7, #a259ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .header p { color: #666; margin-top: 6px; font-size: 1rem; }
+
+    /* CARD */
+    .card {
+      background: white;
+      border-radius: 14px;
+      border: 1px solid #e8e8f0;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .card label {
+      font-weight: 700;
+      font-size: 0.95rem;
+      display: block;
+      margin-bottom: 4px;
+      color: #1a1a2e;
+    }
+    .card .hint { font-size: 0.82rem; color: #999; margin-bottom: 10px; }
+
+    textarea, input[type=url] {
+      width: 100%;
+      border: 1.5px solid #e0e0ee;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 0.9rem;
+      font-family: inherit;
+      color: #333;
+      outline: none;
+      transition: border 0.2s;
+      resize: vertical;
+    }
+    textarea:focus, input[type=url]:focus { border-color: #4f6ef7; }
+
+    /* BUTTON */
+    #run-btn {
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(135deg, #4f6ef7, #a259ff);
+      color: white;
+      font-size: 1rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      margin-bottom: 1rem;
+      transition: opacity 0.2s, transform 0.1s;
+      letter-spacing: 0.3px;
+    }
+    #run-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+    #run-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* STATUS */
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.9rem;
+      color: #666;
+      margin-bottom: 1rem;
+    }
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid #ddd;
+      border-top-color: #4f6ef7;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error {
+      color: #c0392b;
+      font-size: 0.9rem;
+      padding: 10px 14px;
+      background: #fff5f5;
+      border-radius: 8px;
+      border: 1px solid #fdd;
+      margin-bottom: 1rem;
+    }
+    .hidden { display: none !important; }
+
+    /* INSIGHTS */
+    .insight-card { margin-top: 1.5rem; }
+    .insights { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+    .chip {
+      background: #eef2ff;
+      color: #3a57e0;
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-size: 0.8rem;
+    }
+    .chip strong { font-weight: 700; }
+    .analysis-text {
+      font-size: 0.88rem;
+      color: #555;
+      line-height: 1.7;
+      margin-top: 8px;
+    }
+
+    /* COMPARE */
+    .compare {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 1.5rem;
+    }
+    @media (max-width: 620px) { .compare { grid-template-columns: 1fr; } }
+
+    .compare-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 20px;
+      display: inline-block;
+      margin-bottom: 8px;
+    }
+    .before-label { background: #f0f0f0; color: #555; }
+    .after-label  { background: #d4edda; color: #1a6b33; }
+
+    /* LP FRAME */
+    .lp-frame {
+      border: 1px solid #e0e0ee;
+      border-radius: 12px;
+      overflow: hidden;
+      background: white;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    }
+    .lp-bar {
+      background: #f5f5f7;
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .dot { width: 9px; height: 9px; border-radius: 50%; }
+    .lp-url {
+      font-size: 11px; color: #999;
+      background: white;
+      border-radius: 4px;
+      padding: 2px 8px;
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .lp-body { padding: 20px 18px; min-height: 280px; }
+    .lp-headline { font-size: 1.15rem; font-weight: 800; color: #111; margin-bottom: 8px; line-height: 1.3; }
+    .lp-sub { font-size: 0.85rem; color: #555; margin-bottom: 14px; line-height: 1.6; }
+    .lp-cta {
+      display: inline-block;
+      padding: 10px 22px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: white;
+      border: none;
+      cursor: pointer;
+      margin-bottom: 14px;
+    }
+    .lp-trust { font-size: 0.75rem; color: #999; margin-bottom: 12px; }
+    .lp-features { display: flex; flex-direction: column; gap: 8px; }
+    .lp-feat { display: flex; align-items: flex-start; gap: 8px; font-size: 0.82rem; color: #444; line-height: 1.5; }
+    .feat-icon {
+      width: 17px; height: 17px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 9px; flex-shrink: 0; margin-top: 1px; font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+
+<div class="wrapper">
+
+  <div class="header">
+    <h1>Mirra ✦</h1>
+    <p>Paste your ad + landing page → get a personalized, CRO-optimized version instantly</p>
+  </div>
+
+  <div class="card">
+    <label>Ad Creative</label>
+    <p class="hint">Describe your ad — headline, offer, CTA, target audience, tone</p>
+    <textarea id="ad-input" rows="4" placeholder="E.g. Bold headline: 'Tired of missing deadlines?' — Offer: 30-day free trial, no credit card. CTA: Start free. Target: project managers at startups. Urgent tone."></textarea>
+  </div>
+
+  <div class="card">
+    <label>Landing Page URL</label>
+    <p class="hint">The page people land on after clicking your ad</p>
+    <input type="url" id="lp-url" placeholder="https://yoursite.com/landing-page" />
+  </div>
+
+  <div class="card">
+    <label>Current Landing Page Copy</label>
+    <p class="hint">Paste your existing headline, subheadline, CTA, and key bullet points</p>
+    <textarea id="lp-input" rows="5" placeholder="Headline: The all-in-one project tool&#10;Sub: Get your team organized&#10;CTA: Get started&#10;Features:&#10;- Real-time collaboration&#10;- 50+ integrations&#10;- Mobile app"></textarea>
+  </div>
+
+  <button id="run-btn" onclick="personalize()">✦ Personalize my landing page</button>
+
+  <div id="status" class="status hidden">
+    <div class="spinner"></div>
+    <span id="status-text">Analyzing your ad...</span>
+  </div>
+
+  <div id="error" class="error hidden"></div>
+
+  <!-- OUTPUT -->
+  <div id="output" class="hidden">
+
+    <div class="card insight-card">
+      <label>What the AI extracted from your ad</label>
+      <div id="insights" class="insights"></div>
+      <p id="analysis" class="analysis-text"></p>
+    </div>
+
+    <div class="compare">
+      <div>
+        <span class="compare-label before-label">Before</span>
+        <div class="lp-frame" id="before-frame"></div>
+      </div>
+      <div>
+        <span class="compare-label after-label">After — personalized ✦</span>
+        <div class="lp-frame" id="after-frame"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+async function personalize() {
+  const adInput = document.getElementById("ad-input").value.trim();
+  const lpInput = document.getElementById("lp-input").value.trim();
+
+  if (!adInput) return showError("Please describe your ad creative.");
+  if (!lpInput) return showError("Please paste your landing page copy.");
+
+  clearError();
+  setLoading(true, "Analyzing your ad...");
+  document.getElementById("output").classList.add("hidden");
+
+  try {
+    setLoading(true, "Personalizing your landing page...");
+
+    const response = await fetch("/personalize", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ adInput, lpInput })
+    });
+    const text = await response.text();
+console.log("RAW:", text);
+
+if (!text) throw new Error("Empty response");
+
+let data;
+try {
+  data = JSON.parse(text);
+} catch {
+  throw new Error("Invalid JSON from server");
+}
+    if (data.error) throw new Error(data.error);
+
+    renderOutput(data);
+    setLoading(false);
+
+  } catch (err) {
+    setLoading(false);
+    showError("Error: " + err.message);
+  }
+}
+
+function renderOutput(data) {
+  document.getElementById("insights").innerHTML = (data.insights || [])
+    .map(i => `<div class="chip"><strong>${i.label}:</strong> ${i.value}</div>`)
+    .join("");
+
+  document.getElementById("analysis").textContent = data.adAnalysis || "";
+  document.getElementById("before-frame").innerHTML = buildFrame(data.before, false);
+  document.getElementById("after-frame").innerHTML = buildFrame(data.after, true);
+  document.getElementById("output").classList.remove("hidden");
+}
+
+function buildFrame(d, isAfter) {
+  const ctaColor  = d.ctaColor || "#4f6ef7";
+  const iconBg    = isAfter ? "#d4edda" : "#eef2ff";
+  const iconColor = isAfter ? "#1a6b33" : "#3a57e0";
+  const url       = document.getElementById("lp-url").value || "yoursite.com";
+
+  const features = (d.features || []).map(f => `
+    <div class="lp-feat">
+      <div class="feat-icon" style="background:${iconBg};color:${iconColor};">✓</div>
+      <span>${f}</span>
+    </div>`).join("");
+
+  const trust = d.trust ? `<div class="lp-trust">⭐ ${d.trust}</div>` : "";
+
+  return `
+    <div class="lp-bar">
+      <div class="dot" style="background:#ff5f57;"></div>
+      <div class="dot" style="background:#febc2e;"></div>
+      <div class="dot" style="background:#28c840;"></div>
+      <div class="lp-url">${url}</div>
+    </div>
+    <div class="lp-body">
+      <div class="lp-headline">${d.headline || ""}</div>
+      <div class="lp-sub">${d.sub || ""}</div>
+      <button class="lp-cta" style="background:${ctaColor};">${d.cta || "Get started"}</button>
+      ${trust}
+      <div class="lp-features">${features}</div>
+    </div>`;
+}
+
+function setLoading(show, text = "") {
+  document.getElementById("status").classList.toggle("hidden", !show);
+  document.getElementById("run-btn").disabled = show;
+  if (text) document.getElementById("status-text").textContent = text;
+}
+
+function showError(msg) {
+  const el = document.getElementById("error");
+  el.textContent = msg;
+  el.classList.remove("hidden");
+}
+
+function clearError() {
+  document.getElementById("error").classList.add("hidden");
+}
+</script>
+
+</body>
+</html>
