@@ -6,6 +6,7 @@ Match your landing page messaging to your ad creative instantly using AI.
 1. Paste your ad description
 2. Enter your landing page URL + copy
 3. Get a CRO-optimized, personalized version in seconds
+4. and you are done
 
 ## Setup
 
