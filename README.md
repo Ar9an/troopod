@@ -6,7 +6,7 @@ Match your landing page messaging to your ad creative instantly using AI.
 1. Paste your ad description
 2. Enter your landing page URL + copy
 3. Get a CRO-optimized, personalized version in seconds
-4. and you are done
+4. and you are done 
 
 ## Setup
 
@@ -29,7 +29,7 @@ node server.js
 Open http://localhost:3000
 
 ## Tech Stack
-- Frontend: HTML, CSS, Vanilla JS
+- Frontend: HTML, CSS, Vanilla Java Script
 - Backend: Node.js + Express
 - AI: OpenRouter API (Qwen 2.5 72B)
 
